@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expiration-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expiration
+  template:
+    metadata:
+      labels:
+        app: expiration
+    spec:
+      containers:
+        - name: expiration
+          image: raymansell/expiration:latest
+          env:
+            - name: NATS_CLIENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              value: 'http://nats-srv:4222'
+            - name: NATS_STREAM_NAME
+              value: 'ticketing-app'
+            - name: REDIS_HOST
+              value: 'expiration-redis-srv'
+# no ClusterIP service required for this microservice.
+# this microservice is not contacted by any other part of the ticketing application (not directly) - communication will only occur via NATS events
+# we're also not going to have any network requests going directly to the expiration microservice
