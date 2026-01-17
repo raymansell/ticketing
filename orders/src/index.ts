@@ -7,6 +7,8 @@ import { ExpirationCompleteListener } from './events/listeners/expiration-comple
 import { PaymentCreatedListener } from './events/listeners/payment-created-listener.js';
 
 const start = async () => {
+  console.log('Starting up the orders service...');
+
   if (!process.env.JWT_KEY) {
     throw new Error('JWT_KEY must be defined');
   }
@@ -27,11 +29,11 @@ const start = async () => {
     await natsWrapper.connect(
       process.env.NATS_CLIENT_NAME,
       process.env.NATS_URL,
-      process.env.NATS_STREAM_NAME
+      process.env.NATS_STREAM_NAME,
     );
     natsWrapper.connection.closed().then((err) => {
       console.log(
-        `NATS connection closed ${err ? ' with error: ' + err.message : ''}`
+        `NATS connection closed ${err ? ' with error: ' + err.message : ''}`,
       );
       process.exit(0); // recall the tsx watch mode caveat (see one_offs/tsx-caveat.js)
     });
@@ -45,22 +47,22 @@ const start = async () => {
 
     new TicketCreatedListener(
       natsWrapper.jsManager,
-      natsWrapper.jsClient
+      natsWrapper.jsClient,
     ).listen();
 
     new TicketUpdatedListener(
       natsWrapper.jsManager,
-      natsWrapper.jsClient
+      natsWrapper.jsClient,
     ).listen();
 
     new ExpirationCompleteListener(
       natsWrapper.jsManager,
-      natsWrapper.jsClient
+      natsWrapper.jsClient,
     ).listen();
 
     new PaymentCreatedListener(
       natsWrapper.jsManager,
-      natsWrapper.jsClient
+      natsWrapper.jsClient,
     ).listen();
 
     await mongoose.connect(process.env.MONGO_URI);
